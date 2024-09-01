@@ -1,31 +1,20 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
+import 'react-native-gesture-handler';
 import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import {NavigationContainer} from '@react-navigation/native';
 
-import {Colors} from 'react-native/Libraries/NewAppScreen';
+import {StatusBar, useColorScheme} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {Navigation} from './src/navigation';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
   return (
-    <SafeAreaView edges={['top', 'bottom']}>
+    <SafeAreaView edges={['top', 'bottom']} style={{flex: 1}}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <Text>Todo App</Text>
+      <NavigationContainer>
+        <Navigation />
+      </NavigationContainer>
     </SafeAreaView>
   );
 }
