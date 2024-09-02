@@ -1,10 +1,13 @@
 import {View, Text, StyleSheet, TouchableOpacity, Alert} from 'react-native';
-import React from 'react';
+import React, {useState} from 'react';
 import {InputField, PrimaryButton, ErrorText} from '../components';
 import {useForm, Controller} from 'react-hook-form';
 import auth from '@react-native-firebase/auth';
+import {COLORS} from '../utils/constants/color';
+import {SIGNUP} from '../utils/constants/route-name';
 
 export function Login({navigation}) {
+  const [loading, setLoading] = useState(false);
   const {
     control,
     handleSubmit,
@@ -17,12 +20,15 @@ export function Login({navigation}) {
   });
 
   const onSubmit = data => {
+    setLoading(true);
     auth()
       .signInWithEmailAndPassword(data.email, data.password)
       .then(() => {
         console.log('User account created & signed in!');
+        setLoading(false);
       })
       .catch(error => {
+        setLoading(false);
         if (error.code === 'auth/email-already-in-use') {
           Alert.alert('That email address is already in use!');
         }
@@ -77,7 +83,11 @@ export function Login({navigation}) {
 
           {errors.password && <ErrorText />}
 
-          <PrimaryButton text="LogIn" onPress={handleSubmit(onSubmit)} />
+          <PrimaryButton
+            text="LogIn"
+            onPress={handleSubmit(onSubmit)}
+            loading={loading}
+          />
 
           <View
             style={{
@@ -88,17 +98,17 @@ export function Login({navigation}) {
             }}>
             <Text
               style={{
-                color: '#000',
+                color: COLORS.dark,
               }}>
               Don't have any account ?{' '}
             </Text>
             <TouchableOpacity
               onPress={() => {
-                navigation.navigate('SignUp');
+                navigation.navigate(SIGNUP);
               }}>
               <Text
                 style={{
-                  color: 'red',
+                  color: COLORS.primary,
                   fontWeight: '600',
                 }}>
                 SignUp
@@ -113,7 +123,7 @@ export function Login({navigation}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.white,
   },
   subContainer: {
     flex: 1,
@@ -127,7 +137,6 @@ const styles = StyleSheet.create({
   mainText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#000',
+    color: COLORS.dark,
   },
-  formContainer: {},
 });

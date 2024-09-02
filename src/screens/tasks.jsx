@@ -1,16 +1,27 @@
-import {View, Text, TouchableOpacity, FlatList, Alert} from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  Alert,
+  ActivityIndicator,
+  StyleSheet,
+} from 'react-native';
 import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {firebase} from '@react-native-firebase/database';
 import auth from '@react-native-firebase/auth';
 
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {UpdateTask} from '../components/modal';
 import {AuthContext} from '../context';
+import {Header} from '../components';
+import {COLORS} from '../utils/constants/color';
+import {TASKDETAIL} from '../utils/constants/route-name';
 
 export function Tasks({navigation}) {
   const [tasks, setTasks] = useState([]);
   const [modal, setModal] = useState(false);
   const [taskId, setTaskId] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const user = auth().currentUser;
   const userId = user.uid;
@@ -18,17 +29,17 @@ export function Tasks({navigation}) {
   const {userData} = useContext(AuthContext);
 
   useEffect(() => {
+    setLoading(true);
     if (userData.role === 0) {
       firebase
         .app()
-        .database(
-          'https://todo-8e5a6-default-rtdb.asia-southeast1.firebasedatabase.app/',
-        )
+        .database(process.env.DB_URL)
         .ref(`/tasks`)
         .orderByChild('userId')
         .equalTo(userId)
         .once('value')
         .then(snapshot => {
+          setLoading(false);
           if (snapshot.exists()) {
             const users = snapshot.val();
             const usersArray = Object.keys(users).map(key => ({
@@ -41,18 +52,18 @@ export function Tasks({navigation}) {
           }
         })
         .catch(error => {
+          setLoading(false);
           console.error('Error fetching users with role 0: ', error);
         });
     } else {
       firebase
         .app()
-        .database(
-          'https://todo-8e5a6-default-rtdb.asia-southeast1.firebasedatabase.app/',
-        )
+        .database(process.env.DB_URL)
         .ref(`/tasks`)
         .once('value')
         .then(snapshot => {
           if (snapshot.exists()) {
+            setLoading(false);
             const tasks = snapshot.val();
             const tasksArray = Object.keys(tasks).map(key => ({
               id: key, // The unique ID (userId) from the object
@@ -64,6 +75,7 @@ export function Tasks({navigation}) {
           }
         })
         .catch(error => {
+          setLoading(false);
           console.error('Error fetching users with role 0: ', error);
         });
     }
@@ -72,9 +84,7 @@ export function Tasks({navigation}) {
   const deleteTask = taskId => {
     firebase
       .app()
-      .database(
-        'https://todo-8e5a6-default-rtdb.asia-southeast1.firebasedatabase.app/',
-      )
+      .database(process.env.DB_URL)
       .ref(`/tasks/${taskId}`)
       .remove()
       .then(() => {
@@ -89,9 +99,7 @@ export function Tasks({navigation}) {
   const updateTaskStatus = taskId => {
     const reference = firebase
       .app()
-      .database(
-        'https://todo-8e5a6-default-rtdb.asia-southeast1.firebasedatabase.app/',
-      )
+      .database(process.env.DB_URL)
       .ref(`/tasks/${taskId}`);
 
     reference
@@ -113,21 +121,11 @@ export function Tasks({navigation}) {
   const taskComponent = useCallback(
     item => {
       return (
-        <View
-          style={{
-            margin: 12,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            borderWidth: 1,
-            borderColor: '#000',
-            borderRadius: 16,
-            paddingHorizontal: 8,
-            paddingVertical: 6,
-          }}>
+        <View style={styles.componentContainer}>
           <View>
             <Text
               style={{
-                color: '#000',
+                color: COLORS.dark,
                 fontWeight: '500',
                 fontSize: 16,
               }}>
@@ -135,14 +133,14 @@ export function Tasks({navigation}) {
             </Text>
             <Text
               style={{
-                color: '#000',
+                color: COLORS.dark,
                 marginVertical: 6,
                 fontSize: 13,
               }}>
               <Text
                 style={{
                   fontWeight: '600',
-                  color: 'red',
+                  color: COLORS.primary,
                 }}>
                 Priority :
               </Text>
@@ -152,14 +150,14 @@ export function Tasks({navigation}) {
             {userData.role === 1 ? (
               <Text
                 style={{
-                  color: '#000',
+                  color: COLORS.dark,
                   marginVertical: 6,
                   fontSize: 13,
                 }}>
                 <Text
                   style={{
                     fontWeight: '600',
-                    color: 'red',
+                    color: COLORS.primary,
                   }}>
                   Status :
                 </Text>
@@ -190,7 +188,7 @@ export function Tasks({navigation}) {
                   }}>
                   <Text
                     style={{
-                      color: '#000',
+                      color: COLORS.dark,
                     }}>
                     update
                   </Text>
@@ -200,14 +198,14 @@ export function Tasks({navigation}) {
                     deleteTask(item.id);
                   }}
                   style={{
-                    backgroundColor: 'red',
+                    backgroundColor: COLORS.primary,
                     paddingHorizontal: 8,
                     paddingVertical: 4,
                     borderRadius: 12,
                   }}>
                   <Text
                     style={{
-                      color: '#fff',
+                      color: COLORS.white,
                     }}>
                     Delete
                   </Text>
@@ -229,14 +227,14 @@ export function Tasks({navigation}) {
                   }}>
                   <Text
                     style={{
-                      color: 'white',
+                      color: COLORS.white,
                     }}>
                     {item.status === 'pending' ? 'update status' : item.status}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => {
-                    navigation.navigate('TaskDetail', {
+                    navigation.navigate(TASKDETAIL, {
                       taskId: item.id,
                     });
                   }}
@@ -249,7 +247,7 @@ export function Tasks({navigation}) {
                   }}>
                   <Text
                     style={{
-                      color: '#000',
+                      color: COLORS.dark,
                     }}>
                     Details
                   </Text>
@@ -262,44 +260,51 @@ export function Tasks({navigation}) {
     },
     [tasks],
   );
-  return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: '#fff',
-      }}>
-      <View style={{padding: 16, flexDirection: 'row', alignItems: 'center'}}>
-        <TouchableOpacity
-          onPress={() => {
-            navigation.pop();
-          }}>
-          <MaterialIcons name="arrow-back" size={22} color={'#000'} />
-        </TouchableOpacity>
-        <View style={{flex: 1, alignItems: 'center'}}>
-          <Text
-            style={{
-              fontWeight: '600',
-              textAlign: 'center',
-              fontWeight: '700',
-              fontSize: 24,
-              color:"#000"
-            }}>
-            Tasks
-          </Text>
-        </View>
-      </View>
-      <FlatList
-        data={tasks}
-        keyExtractor={item => item?.id}
-        renderItem={({item}) => taskComponent(item)}
-      />
 
-      <UpdateTask
-        setModal={setModal}
-        modal={modal}
-        taskId={taskId}
-        setTasks={setTasks}
-      />
-    </View>
+  return (
+    <>
+      {loading ? (
+        <ActivityIndicator
+          size={'large'}
+          color={COLORS.primary}
+          style={{
+            flex: 1,
+            alignItems: 'center',
+          }}
+        />
+      ) : (
+        <View style={styles.container}>
+          <Header text={'Tasks'} />
+          <FlatList
+            data={tasks}
+            keyExtractor={item => item?.id}
+            renderItem={({item}) => taskComponent(item)}
+          />
+          <UpdateTask
+            setModal={setModal}
+            modal={modal}
+            taskId={taskId}
+            setTasks={setTasks}
+          />
+        </View>
+      )}
+    </>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+  },
+  componentContainer: {
+    margin: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: COLORS.dark,
+    borderRadius: 16,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+  },
+});

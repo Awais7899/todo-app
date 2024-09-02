@@ -35,9 +35,7 @@ export function UpdateTask({setModal, modal, taskId, setTasks}) {
     // Fetch the task data from Firebase
     const reference = firebase
       .app()
-      .database(
-        'https://todo-8e5a6-default-rtdb.asia-southeast1.firebasedatabase.app/',
-      )
+      .database(process.env.DB_URL)
       .ref(`/tasks/${taskId}`);
 
     reference
@@ -63,11 +61,8 @@ export function UpdateTask({setModal, modal, taskId, setTasks}) {
     const {title, description, due_date, priority} = data;
     const reference = firebase
       .app()
-      .database(
-        'https://todo-8e5a6-default-rtdb.asia-southeast1.firebasedatabase.app/',
-      )
+      .database(process.env.DB_URL)
       .ref(`/tasks/${taskId}`);
-
     reference
       .update({
         title: title,
@@ -76,6 +71,7 @@ export function UpdateTask({setModal, modal, taskId, setTasks}) {
         priority: priority,
       })
       .then(() => {
+        setLoading(false);
         setTasks(prevTasks =>
           prevTasks.map(task =>
             task.id === taskId
@@ -86,6 +82,7 @@ export function UpdateTask({setModal, modal, taskId, setTasks}) {
         setModal(false);
       })
       .catch(error => {
+        setLoading(false);
         console.error('Error updating task in Firebase:', error);
       });
   };
@@ -222,11 +219,10 @@ export function UpdateTask({setModal, modal, taskId, setTasks}) {
               name="priority"
             />
             {errors.priority && <ErrorText />}
-
             <PrimaryButton
               text="Update"
               onPress={handleSubmit(onSubmit)}
-              loader={loading}
+              loading={loading}
             />
           </View>
         </View>

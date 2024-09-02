@@ -5,8 +5,12 @@ import {useForm, Controller} from 'react-hook-form';
 import auth from '@react-native-firebase/auth';
 import {firebase} from '@react-native-firebase/database';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import {FirebaseUtil} from '../utils/apis';
+import {COLORS} from '../utils/constants/color';
+import {LOGIN} from '../utils/constants/route-name';
 
 export function SignUp({navigation}) {
+  const [loading, setLoading] = useState(false);
   const {
     control,
     handleSubmit,
@@ -21,18 +25,15 @@ export function SignUp({navigation}) {
   });
 
   const onSubmit = data => {
+    setLoading(true);
     const {name, email, password, role} = data;
     auth()
       .createUserWithEmailAndPassword(email, password)
       .then(async res => {
-        console.log('User account created & signed in!', res);
         const userId = res.user.uid;
-
         firebase
           .app()
-          .database(
-            'https://todo-8e5a6-default-rtdb.asia-southeast1.firebasedatabase.app/',
-          )
+          .database(process.env.DB_URL)
           .ref(`/users/${userId}`)
           .set({
             name: name,
@@ -41,6 +42,7 @@ export function SignUp({navigation}) {
           });
       })
       .catch(error => {
+        setLoading(false);
         if (error.code === 'auth/email-already-in-use') {
           Alert.alert('That email address is already in use!');
         }
@@ -57,7 +59,7 @@ export function SignUp({navigation}) {
         <View style={styles.textContainer}>
           <Text style={styles.mainText}>SignUp</Text>
         </View>
-        <View style={styles.formContainer}>
+        <View>
           <Controller
             control={control}
             rules={{
@@ -126,12 +128,13 @@ export function SignUp({navigation}) {
                     height: 20,
                     width: 20,
                     borderRadius: 4,
-                    backgroundColor: value === 1 ? 'red' : '#fff',
+                    backgroundColor:
+                      value === 1 ? COLORS.primary : COLORS.white,
                     alignItems: 'center',
                     justifyContent: 'center',
                     borderWidth: value === 1 ? 0 : 1,
                   }}>
-                  <FontAwesome5 color={'#fff'} size={13} name="check" />
+                  <FontAwesome5 color={COLORS.white} size={13} name="check" />
                 </TouchableOpacity>
 
                 <Text
@@ -146,7 +149,11 @@ export function SignUp({navigation}) {
             name="role"
           />
 
-          <PrimaryButton text="Register" onPress={handleSubmit(onSubmit)} />
+          <PrimaryButton
+            text="Register"
+            onPress={handleSubmit(onSubmit)}
+            loading={loading}
+          />
           <View
             style={{
               marginVertical: 12,
@@ -156,17 +163,17 @@ export function SignUp({navigation}) {
             }}>
             <Text
               style={{
-                color: '#000',
+                color: COLORS.dark,
               }}>
               Don't have any account ?{' '}
             </Text>
             <TouchableOpacity
               onPress={() => {
-                navigation.navigate('Login');
+                navigation.navigate(LOGIN);
               }}>
               <Text
                 style={{
-                  color: 'red',
+                  color: COLORS.primary,
                   fontWeight: '600',
                 }}>
                 LogIn
@@ -182,7 +189,7 @@ export function SignUp({navigation}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: COLORS.white,
   },
   subContainer: {
     flex: 1,
@@ -198,5 +205,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#000',
   },
-  formContainer: {},
 });

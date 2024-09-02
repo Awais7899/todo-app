@@ -1,20 +1,29 @@
-import {View, Text, TouchableOpacity} from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  StyleSheet,
+} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {firebase} from '@react-native-firebase/database';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import {Header} from '../components';
+import {COLORS} from '../utils/constants/color';
 
 export function TaskDetail({route, navigation}) {
   const [taskData, setTaskData] = useState({});
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    setLoading(true);
     firebase
       .app()
-      .database(
-        'https://todo-8e5a6-default-rtdb.asia-southeast1.firebasedatabase.app/',
-      )
+      .database(process.env.DB_URL)
       .ref(`/tasks/${route.params.taskId}`)
       .once('value')
       .then(snapshot => {
+        setLoading(false);
         if (snapshot.exists()) {
           console.log(snapshot.val());
           setTaskData(snapshot.val());
@@ -23,129 +32,127 @@ export function TaskDetail({route, navigation}) {
         }
       })
       .catch(error => {
+        setLoading(false);
         console.error('Error fetching user data:', error);
       });
   }, []);
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: '#fff',
-      }}>
-      <View style={{padding: 16}}>
-        <View style={{ flexDirection: 'row', alignItems: 'center',}}>
-          <TouchableOpacity
-            onPress={() => {
-              navigation.pop();
-            }}>
-            <MaterialIcons name="arrow-back" size={22} color={'#000'} />
-          </TouchableOpacity>
-          <View style={{flex: 1, alignItems: 'center'}}>
-            <Text
+    <>
+      {loading ? (
+        <ActivityIndicator
+          size={'large'}
+          color={'red'}
+          style={{
+            flex: 1,
+            alignItems: 'center',
+          }}
+        />
+      ) : (
+        <View style={styles.container}>
+          <Header text={'Task Details'} />
+          <View style={{padding: 16}}>
+            <View
               style={{
-                fontWeight: '600',
-                textAlign: 'center',
-                fontWeight: '700',
-                fontSize: 24,
-                color:'#000'
+                flexDirection: 'row',
+                alignItems: 'center',
               }}>
-              Task Detail
-            </Text>
-          </View>
-        </View>
-        <View>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}>
-            <Text
+              <Text
+                style={{
+                  fontWeight: '500',
+                  fontSize: 16,
+                  marginVertical: 8,
+                  color: COLORS.primary,
+                }}>
+                Title:
+              </Text>
+              <Text style={{fontSize: 14, margin: 8, color: COLORS.dark}}>
+                {taskData.title}
+              </Text>
+            </View>
+            <View
               style={{
-                fontWeight: '500',
-                fontSize: 16,
-                marginVertical: 8,
-                color: 'red',
+                flexDirection: 'row',
+                alignItems: 'center',
               }}>
-              Title:
-            </Text>
-            <Text style={{fontSize: 14, margin: 8, color: '#000'}}>
-              {taskData.title}
-            </Text>
-          </View>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}>
-            <Text
-              style={{
-                fontWeight: '500',
-                fontSize: 16,
-                marginVertical: 8,
-                color: 'red',
-              }}>
-              Status:
-            </Text>
-            <Text style={{fontSize: 14, margin: 8, color: '#000'}}>
-              {taskData?.status}
-            </Text>
-          </View>
+              <Text
+                style={{
+                  fontWeight: '500',
+                  fontSize: 16,
+                  marginVertical: 8,
+                  color: COLORS.primary,
+                }}>
+                Status:
+              </Text>
+              <Text style={{fontSize: 14, margin: 8, color: COLORS.dark}}>
+                {taskData?.status}
+              </Text>
+            </View>
 
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}>
-            <Text
+            <View
               style={{
-                fontWeight: '500',
-                fontSize: 16,
-                marginVertical: 8,
-                color: 'red',
+                flexDirection: 'row',
+                alignItems: 'center',
               }}>
-              Priority:
-            </Text>
-            <Text style={{fontSize: 14, margin: 8, color: '#000'}}>
-              {taskData?.priority}
-            </Text>
-          </View>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}>
-            <Text
+              <Text
+                style={{
+                  fontWeight: '500',
+                  fontSize: 16,
+                  marginVertical: 8,
+                  color: COLORS.primary,
+                }}>
+                Priority:
+              </Text>
+              <Text style={{fontSize: 14, margin: 8, color: COLORS.dark}}>
+                {taskData?.priority}
+              </Text>
+            </View>
+            <View
               style={{
-                fontWeight: '500',
-                fontSize: 16,
-                marginVertical: 8,
-                color: 'red',
+                flexDirection: 'row',
+                alignItems: 'center',
               }}>
-              Due Date:
-            </Text>
-            <Text style={{fontSize: 14, margin: 8, color: '#000'}}>
-              {taskData?.due_date}
-            </Text>
-          </View>
-          <View style={{ 
-            flexDirection:"row",
-           }}>
-            <Text
+              <Text
+                style={{
+                  fontWeight: '500',
+                  fontSize: 16,
+                  marginVertical: 8,
+                  color: COLORS.primary,
+                }}>
+                Due Date:
+              </Text>
+              <Text style={{fontSize: 14, margin: 8, color: COLORS.dark}}>
+                {taskData?.due_date}
+              </Text>
+            </View>
+            <View
               style={{
-                fontWeight: '500',
-                fontSize: 16,
-                marginVertical: 8,
-                color: 'red',
+                flexDirection: 'row',
               }}>
-              Description :
-            </Text>
-            <Text style={{fontSize: 14, color: '#000', margin:8, flex:1}}>
-              {taskData?.description}
-            </Text>
+              <Text
+                style={{
+                  fontWeight: '500',
+                  fontSize: 16,
+                  marginVertical: 8,
+                  color: COLORS.primary,
+                }}>
+                Description :
+              </Text>
+              <Text
+                style={{fontSize: 14, color: COLORS.dark, margin: 8, flex: 1}}>
+                {taskData?.description}
+              </Text>
+            </View>
           </View>
         </View>
-      </View>
-    </View>
+      )}
+    </>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+  },
+});

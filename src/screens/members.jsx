@@ -1,10 +1,20 @@
-import {View, Text, TouchableOpacity, FlatList} from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  ActivityIndicator,
+} from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
 import {firebase} from '@react-native-firebase/database';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import {Header} from '../components';
+import {COLORS} from '../utils/constants/color';
+import {ASSIGNTASK} from '../utils/constants/route-name';
 
 export function Members({navigation}) {
   const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const userComponent = useCallback(
     item => {
@@ -19,7 +29,7 @@ export function Members({navigation}) {
           <View>
             <Text
               style={{
-                color: '#000',
+                color: COLORS.dark,
               }}>
               {item?.name}
             </Text>
@@ -27,7 +37,7 @@ export function Members({navigation}) {
           <View>
             <TouchableOpacity
               onPress={() => {
-                navigation.navigate('AssignTask', {
+                navigation.navigate(ASSIGNTASK, {
                   userId: item.id,
                 });
               }}
@@ -39,7 +49,7 @@ export function Members({navigation}) {
               }}>
               <Text
                 style={{
-                  color: '#000',
+                  color: COLORS.dark,
                 }}>
                 Assign Task
               </Text>
@@ -52,16 +62,16 @@ export function Members({navigation}) {
   );
 
   useEffect(() => {
+    setLoading(true);
     firebase
       .app()
-      .database(
-        'https://todo-8e5a6-default-rtdb.asia-southeast1.firebasedatabase.app/',
-      )
+      .database(process.env.DB_URL)
       .ref(`/users`)
       .orderByChild('role')
       .equalTo(0)
       .once('value')
       .then(snapshot => {
+        setLoading(false);
         if (snapshot.exists()) {
           const users = snapshot.val();
           console.log(users);
@@ -75,39 +85,35 @@ export function Members({navigation}) {
         }
       })
       .catch(error => {
+        setLoading(false);
         console.error('Error fetching users with role 0: ', error);
       });
   }, []);
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: '#fff',
-      }}>
-      <View style={{padding: 16, flexDirection: 'row', alignItems: 'center'}}>
-        <TouchableOpacity
-          onPress={() => {
-            navigation.pop();
+    <>
+      {loading ? (
+        <ActivityIndicator
+          size={'large'}
+          color={COLORS.primary}
+          style={{
+            flex: 1,
+            alignItems: 'center',
+          }}
+        />
+      ) : (
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: COLORS.white,
           }}>
-          <MaterialIcons name="arrow-back" size={22} color={'#000'} />
-        </TouchableOpacity>
-        <View style={{flex: 1, alignItems: 'center'}}>
-          <Text
-            style={{
-              fontWeight: '600',
-              textAlign: 'center',
-              fontWeight: '700',
-              fontSize: 24,
-            }}>
-            Members
-          </Text>
+          <Header text={'Members'} />
+          <FlatList
+            data={members}
+            keyExtractor={item => item?.id}
+            renderItem={({item}) => userComponent(item)}
+          />
         </View>
-      </View>
-      <FlatList
-        data={members}
-        keyExtractor={item => item?.id}
-        renderItem={({item}) => userComponent(item)}
-      />
-    </View>
+      )}
+    </>
   );
 }
