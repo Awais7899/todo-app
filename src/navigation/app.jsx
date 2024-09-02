@@ -1,6 +1,6 @@
 import {View, Text} from 'react-native';
 import React from 'react';
-import {AssignTask, Home, Members, Tasks} from '../screens';
+import {AssignTask, Home, Members, TaskDetail, Tasks} from '../screens';
 
 import {createStackNavigator} from '@react-navigation/stack';
 const Stack = createStackNavigator();
@@ -28,6 +28,11 @@ export default function App() {
       <Stack.Screen
         name="AssignTask"
         component={AssignTask}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="TaskDetail"
+        component={TaskDetail}
         options={{headerShown: false}}
       />
     </Stack.Navigator>

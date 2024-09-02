@@ -4,3 +4,4 @@ export * from './home';
 export * from './assign-task';
 export * from './members';
 export * from './tasks';
+export * from './task-detail';

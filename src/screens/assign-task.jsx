@@ -47,6 +47,7 @@ export function AssignTask({route, navigation}) {
         description: description,
         due_date: due_date,
         priority: priority,
+        status: "pending",
         userId: route.params?.userId,
       })
       .then(() => {

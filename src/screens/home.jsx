@@ -1,14 +1,16 @@
 import {View, Text, TouchableOpacity} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import auth from '@react-native-firebase/auth';
 import {firebase} from '@react-native-firebase/database';
 import {PrimaryBox} from '../components';
+import { AuthContext } from '../context';
 
 export function Home({navigation}) {
-  const [userData, setUserData] = useState({});
-
+  const {userData, setUserData} = useContext(AuthContext);
   const user = auth().currentUser;
   const userId = user.uid;
+
+  console.log(userData)
 
   useEffect(() => {
     firebase
@@ -20,6 +22,7 @@ export function Home({navigation}) {
       .once('value')
       .then(snapshot => {
         if (snapshot.exists()) {
+          console.log(snapshot.val())
           setUserData(snapshot.val());
         } else {
           console.log('User data not found!');
@@ -76,7 +79,7 @@ export function Home({navigation}) {
             flexDirection: 'row',
             justifyContent: 'space-between',
           }}>
-          {userData.role === 1 && (
+          {userData?.role === 1 && (
             <PrimaryBox
               title="Members"
               onPress={() => {
@@ -84,7 +87,6 @@ export function Home({navigation}) {
               }}
             />
           )}
-
           <PrimaryBox
             title="Tasks"
             onPress={() => {

@@ -5,6 +5,7 @@ import {NavigationContainer} from '@react-navigation/native';
 import {StatusBar, useColorScheme} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {Navigation} from './src/navigation';
+import {AuthContextProvider} from './src/context';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -13,7 +14,9 @@ function App() {
     <SafeAreaView edges={['top', 'bottom']} style={{flex: 1}}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       <NavigationContainer>
-        <Navigation />
+        <AuthContextProvider>
+          <Navigation />
+        </AuthContextProvider>
       </NavigationContainer>
     </SafeAreaView>
   );
